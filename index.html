@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chemical Stock Check – 40-03-W-14B(18)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1F3864;--blue:#378ADD;--blue-lt:#E6F1FB;--blue-dk:#185FA5;
+  --green-lt:#EAF3DE;--green:#3B6D11;
+  --red-lt:#FCEBEB;--red:#A32D2D;
+  --amber-lt:#FAEEDA;--amber:#854F0B;
+  --gray-lt:#F5F5F5;--gray:#888;--border:#E0E0E0;
+  --text:#1a1a1a;--text2:#666;--white:#fff;
+  --radius:10px;--radius-sm:6px;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F4F8;color:var(--text);min-height:100vh}
+
+/* ── HEADER ── */
+.app-header{background:var(--navy);color:#fff;padding:0}
+.header-inner{max-width:960px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:14px}
+.header-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.header-text h1{font-size:17px;font-weight:600;line-height:1.2}
+.header-text p{font-size:12px;opacity:.7;margin-top:2px}
+
+/* ── TABS ── */
+.tab-bar{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.tab-inner{max-width:960px;margin:0 auto;display:flex}
+.tab-btn{padding:13px 22px;font-size:14px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--text2);border-bottom:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{color:var(--blue-dk);border-bottom-color:var(--blue)}
+.tab-btn:hover{color:var(--text);background:var(--gray-lt)}
+
+/* ── MAIN ── */
+.main{max-width:960px;margin:0 auto;padding:20px 16px}
+
+/* ── CARD ── */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
+.card-head{background:var(--navy);color:#fff;padding:10px 16px;font-size:13px;font-weight:600;letter-spacing:.03em;display:flex;align-items:center;gap:8px}
+.card-body{padding:16px}
+
+/* ── META ROW ── */
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.meta-field label{display:block;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.meta-field input,.meta-field select{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;font-size:14px;background:#fff;color:var(--text)}
+.meta-field input:focus,.meta-field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #378ADD22}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+thead tr{background:var(--navy)}
+thead th{color:#fff;padding:9px 10px;text-align:left;font-weight:500;font-size:12px;white-space:nowrap}
+tbody tr:nth-child(even){background:#FAFBFC}
+tbody tr:hover{background:var(--blue-lt)}
+td{padding:8px 10px;border-bottom:1px solid #F0F0F0;vertical-align:middle}
+.inp-actual{width:100px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;font-size:13px;text-align:right;background:#FFF9EC;color:var(--text);font-weight:600}
+.inp-actual:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px #378ADD22}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600;white-space:nowrap}
+.ok{background:var(--green-lt);color:var(--green)}
+.low{background:var(--red-lt);color:var(--red)}
+.high{background:var(--amber-lt);color:var(--amber)}
+.empty{background:var(--gray-lt);color:var(--gray)}
+
+/* ── BUTTONS ── */
+.btn-save{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px 28px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s}
+.btn-save:hover{background:var(--blue-dk)}
+.btn-save:disabled{background:#B5D4F4;cursor:not-allowed}
+.btn-refresh{background:var(--navy);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-refresh:hover{background:#2a4a8a}
+
+/* ── SETUP BANNER (water-project style) ── */
+.setup-banner{background:#FEF9E7;border:1px solid #F39C12;border-radius:var(--radius);padding:12px;margin-bottom:12px}
+.setup-banner h3{font-size:12px;font-weight:600;color:#7D6608;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.setup-url-inp{width:100%;padding:8px 10px;border:1px solid #F39C12;border-radius:var(--radius-sm);font-size:12px;font-family:monospace;margin:4px 0 8px;box-sizing:border-box}
+.setup-url-inp:focus{outline:none;border-color:#D4AC0D}
+.setup-steps{font-size:11.5px;color:#7D6608;line-height:1.9;margin-bottom:8px}
+.setup-steps ol{padding-left:18px}
+/* share card */
+.share-card{background:#EBF5FB;border:1px solid #AED6F1;border-radius:var(--radius);padding:12px;margin-bottom:12px}
+.share-card h3{font-size:12px;font-weight:600;color:#1A5276;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.url-copy-row{display:flex;align-items:center;gap:6px;background:#fff;border:.5px solid #AED6F1;border-radius:var(--radius-sm);padding:6px 8px;margin-bottom:8px;cursor:pointer}
+.url-copy-txt{font-family:monospace;font-size:10.5px;color:#1A5276;flex:1;word-break:break-all;line-height:1.4}
+.url-copy-btn{flex-shrink:0;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:5px 10px;font-size:11px;cursor:pointer}
+/* sync strip */
+.sync-strip{display:flex;align-items:center;gap:6px;padding:6px 14px;font-size:10px;background:rgba(31,56,100,.06);border-bottom:1px solid var(--border)}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sdot-idle{background:#bbb}.sdot-ok{background:#27AE60}.sdot-err{background:#E74C3C}
+.sdot-busy{background:#378ADD;animation:sdp .9s ease infinite}
+@keyframes sdp{0%,100%{opacity:1}50%{opacity:.25}}
+.sync-txt{color:var(--text2);font-size:11px;flex:1}
+/* banner ok/err */
+.banner-ok{display:none;background:#EAFAF1;border:.5px solid #A9DFBF;border-radius:var(--radius-sm);padding:9px 12px;margin-top:6px;font-size:12px;color:#1E8449}
+.banner-err{display:none;background:#FDEDEC;border:.5px solid #F5B7B1;border-radius:var(--radius-sm);padding:9px 12px;margin-top:6px;font-size:12px;color:#A93226}
+.btn-set{background:var(--navy);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;cursor:pointer;white-space:nowrap;font-weight:500}
+
+/* ── ALERT ── */
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.alert-ok{background:var(--green-lt);color:var(--green)}
+.alert-err{background:var(--red-lt);color:var(--red)}
+.alert-info{background:var(--blue-lt);color:var(--blue-dk)}
+
+/* ── STAT CARDS ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:center}
+.stat-n{font-size:28px;font-weight:700;color:var(--navy);line-height:1}
+.stat-n.danger{color:var(--red)}
+.stat-n.warn{color:var(--amber)}
+.stat-l{font-size:11px;color:var(--text2);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+
+/* ── RECOMMEND ── */
+.rec-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0F0F0;font-size:13px}
+.rec-item:last-child{border:none}
+.rec-name{font-weight:500}
+.rec-place{font-size:12px;color:var(--text2)}
+
+/* ── LOADER ── */
+.loader{text-align:center;padding:3rem;color:var(--text2);font-size:14px}
+.spin{display:inline-block;animation:spin 1s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  .header-inner{padding:12px 14px}
+  .main{padding:12px 10px}
+  .tab-btn{padding:10px 14px;font-size:13px}
+  .inp-actual{width:80px}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-icon">🧪</div>
+    <div class="header-text">
+      <h1>Daily Chemical Stock Check Sheet</h1>
+      <p>40-03-W-14B(18) — Water Treatment Plant</p>
+    </div>
+  </div>
+  <div class="sync-strip">
+    <div class="sdot sdot-idle" id="sync-dot"></div>
+    <span class="sync-txt" id="sync-txt">ยังไม่เชื่อม Google Sheets</span>
+  </div>
+</header>
+
+<nav class="tab-bar" role="tablist">
+  <div class="tab-inner">
+    <button class="tab-btn active" role="tab" onclick="switchTab('form',this)">📋 กรอกข้อมูล</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('dash',this)">📊 Dashboard</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('setup',this)">⚙️ ตั้งค่า</button>
+  </div>
+</nav>
+
+<main class="main">
+<div id="global-msg"></div>
+
+<!-- ═══════════════ FORM TAB ═══════════════ -->
+<div id="tab-form">
+  <div class="meta-grid">
+    <div class="meta-field">
+      <label>วันที่</label>
+      <input type="date" id="f-date"/>
+    </div>
+    <div class="meta-field">
+      <label>shift</label>
+      <select id="f-shift">
+        <option value="A"> A</option>
+        <option value="B"> B</option>
+        <option value="C"> C</option>
+        <option value="D"> D</option>
+      </select>
+    </div>
+    <div class="meta-field">
+      <label>ผู้ตรวจสอบ</label>
+      <input type="text" id="f-checker" placeholder="ชื่อ"/>
+    </div>
+    <div class="meta-field">
+      <label>หัวหน้ากะ</label>
+      <input type="text" id="f-leader" placeholder="ชื่อ"/>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">🏭 Liquid Chemical in Tank (หน่วย: ลิตร)</div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th>Chemical Name</th><th>Place</th>
+          <th class="num">Min (L)</th><th class="num">Max (L)</th>
+          <th class="num">Actual (L)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody-tank"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">📊 Liquid Chemical in Tank (หน่วย: %)</div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th>Chemical Name</th><th>Place</th>
+          <th class="num">Min (%)</th><th class="num">Max (%)</th>
+          <th class="num">Actual (%)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody-pct"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">🪣 Liquid Chemical in Pail (หน่วย: kg)</div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th>Chemical Name</th><th>Place</th>
+          <th class="num">Min (kg)</th><th class="num">Max (kg)</th>
+          <th class="num">Actual (kg)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody-pail"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;padding-bottom:1rem">
+    <button class="btn-save" id="btn-save" onclick="submitForm()">
+      💾 บันทึกข้อมูลลง Google Sheets
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD TAB ═══════════════ -->
+<div id="tab-dash" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <span style="font-size:14px;font-weight:600;color:var(--navy)">ภาพรวมสต็อกสารเคมี</span>
+    <button class="btn-refresh" onclick="loadDashboard()">🔄 รีเฟรช</button>
+  </div>
+  <div id="dash-area"><div class="loader"><span class="spin">⏳</span> กำลังโหลด…</div></div>
+</div>
+
+<!-- ═══════════════ SETUP TAB ═══════════════ -->
+<div id="tab-setup" style="display:none">
+
+  <!-- SHARE CONFIG CARD -->
+  <div class="share-card" id="share-card-main" style="display:none">
+    <h3>📤 แชร์การตั้งค่าไปอุปกรณ์อื่น</h3>
+    <p style="font-size:11px;color:#1A5276;margin-bottom:8px">Copy URL ด้านล่างเพื่อตั้งค่าในอุปกรณ์อื่นได้ทันที</p>
+    <div class="url-copy-row" onclick="copySheetUrl()" title="แตะเพื่อ Copy URL">
+      <span class="url-copy-txt" id="share-url-txt">—</span>
+      <button class="url-copy-btn">📋 Copy</button>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn-save" style="flex:1;font-size:12px;padding:9px" onclick="exportConfig()">⬇️ Export Config</button>
+    </div>
+  </div>
+
+  <!-- IMPORT CONFIG CARD -->
+  <div class="share-card" style="background:#EAFAF1;border-color:#A9DFBF;margin-bottom:12px">
+    <h3 style="color:#1E8449">⬆️ Import การตั้งค่า (จากอุปกรณ์อื่น)</h3>
+    <p style="font-size:11px;color:#1E8449;margin-bottom:8px">ถ้าได้รับไฟล์ config.json — Import เพื่อตั้งค่า URL อัตโนมัติ</p>
+    <label style="display:flex;align-items:center;gap:7px;cursor:pointer">
+      <input type="file" accept=".json" id="import-file-input" style="display:none" onchange="importConfig(event)">
+      <button class="btn-save" style="flex:none;font-size:12px;padding:9px 14px" onclick="document.getElementById('import-file-input').click()">📂 เลือกไฟล์ Config</button>
+      <span style="font-size:11px;color:var(--text2)" id="import-file-name">ยังไม่ได้เลือกไฟล์</span>
+    </label>
+    <div class="banner-ok" id="import-ok" style="margin-top:8px"></div>
+    <div class="banner-err" id="import-err" style="margin-top:8px"></div>
+  </div>
+
+  <!-- SETUP BANNER -->
+  <div class="setup-banner">
+    <h3>🔌 เชื่อม Google Sheets</h3>
+    <div style="background:#FFF3CD;border-radius:5px;padding:8px 10px;margin-bottom:8px;font-size:11px;color:#7D6608">
+      <strong>🔐 ล็อคโดยผู้สร้าง</strong> — การแก้ไข URL ต้องใช้ PIN ผู้สร้างเท่านั้น<br>
+      ผู้ใช้ทั่วไปสามารถดูสถานะและทดสอบการเชื่อมต่อได้
+    </div>
+    <div class="setup-steps"><ol>
+      <li>เปิด <a href="https://sheets.google.com" target="_blank" style="color:var(--blue)">Google Sheets</a> → สร้าง Spreadsheet ใหม่</li>
+      <li>Extensions → Apps Script → วางโค้ดจากไฟล์ <code>apps_script.gs</code></li>
+      <li>Deploy → New deployment → Web App → Execute as: Me → Anyone → Deploy</li>
+      <li>Copy Web App URL → กด <strong>แก้ไข URL (ผู้สร้าง)</strong></li>
+    </ol></div>
+
+    <div id="url-status-display" style="display:none;background:var(--green-lt);border:.5px solid #A9DFBF;border-radius:5px;padding:8px 10px;margin-bottom:8px;font-size:11px;color:#1E8449">
+      <div style="font-weight:600;margin-bottom:3px">✅ URL ที่บันทึกไว้:</div>
+      <div id="url-display-text" style="font-family:monospace;font-size:10px;word-break:break-all;color:#1E8449">—</div>
+    </div>
+
+    <input class="setup-url-inp" id="inp-apiurl" type="url" placeholder="https://script.google.com/macros/s/.../exec" style="display:none">
+
+    <div style="display:flex;gap:7px;margin-top:4px">
+      <button class="btn-save" style="flex:1" onclick="toggleUrlEdit()">🔐 <span id="url-edit-btn-lbl">แก้ไข URL (ผู้สร้าง)</span></button>
+      <button class="btn-refresh" onclick="testConn()">🔌 ทดสอบ</button>
+    </div>
+
+    <div id="url-edit-row" style="display:none;margin-top:8px">
+      <div style="display:flex;gap:7px">
+        <button class="btn-save" style="flex:1" onclick="saveApiUrl()">✅ บันทึก URL</button>
+        <button class="btn-refresh" onclick="cancelUrlEdit()">✕ ยกเลิก</button>
+      </div>
+      <div style="margin-top:7px">
+        <button class="btn-refresh" style="font-size:11px;padding:7px 12px" onclick="resetAdminPin()">🔑 รีเซ็ต PIN ผู้สร้าง</button>
+      </div>
+    </div>
+
+    <div class="banner-ok" id="conn-ok"></div>
+    <div class="banner-err" id="conn-err"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">🌐 วิธี Deploy บน GitHub Pages</div>
+    <div class="card-body" style="font-size:13px;line-height:1.9;color:var(--text)">
+      <ol style="padding-left:18px;display:flex;flex-direction:column;gap:6px">
+        <li>สมัคร <a href="https://github.com" target="_blank" style="color:var(--blue)">GitHub</a> (ฟรี)</li>
+        <li>สร้าง Repository → อัปโหลดไฟล์ชื่อ <code>index.html</code></li>
+        <li>Settings → Pages → Branch: main → Save</li>
+        <li>ได้ URL: <code>https://username.github.io/repo-name/</code></li>
+      </ol>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const CHEM = {
+  tank:[
+    {n:"Sulfuric Acid 50%",p:"Cooling BIC1",mn:1000,mx:10000,u:"L"},
+    {n:"Sodium Hypochlorite 10%",p:"Cooling BIC1",mn:1000,mx:10000,u:"L"},
+    {n:"Sulfuric Acid 50%",p:"Cooling BIC2",mn:1000,mx:8000,u:"L"},
+    {n:"Sodium Hypochlorite 10%",p:"Cooling BIC2",mn:1000,mx:8000,u:"L"},
+  ],
+  pct:[
+    {n:"Hydrochloric Acid 35%",p:"Mixed Bed",mn:20,mx:100,u:"%"},
+    {n:"Sodium Hydroxy 50%",p:"Mixed Bed",mn:20,mx:100,u:"%"},
+  ],
+  pail:[
+    {n:"Citric Acid 50%",p:"WTP",mn:0,mx:500,u:"kg"},
+    {n:"PERMTREAT PC-191T",p:"WTP",mn:26,mx:520,u:"kg"},
+    {n:"NALCO 7320",p:"WTP",mn:23,mx:460,u:"kg"},
+    {n:"NALCO 7408",p:"WTP",mn:26,mx:520,u:"kg"},
+    {n:"3D TRASAR 3DT120",p:"Cooling",mn:25,mx:500,u:"kg"},
+    {n:"3D TRASAR 3DT125",p:"Cooling",mn:25,mx:500,u:"kg"},
+    {n:"3D TRASAR 3DT199",p:"Cooling",mn:22,mx:440,u:"kg"},
+    {n:"NALCO 7330",p:"Cooling",mn:25,mx:500,u:"kg"},
+    {n:"NALSPERS 73550",p:"Cooling",mn:25,mx:500,u:"kg"},
+    {n:"NALCO TRAC109",p:"Chiller",mn:25,mx:500,u:"kg"},
+    {n:"NALCO 1250",p:"Boiler",mn:25,mx:500,u:"kg"},
+    {n:"Tri ACT 1805",p:"Boiler",mn:20,mx:400,u:"kg"},
+    {n:"NALCO BT-3000",p:"Boiler",mn:20,mx:400,u:"kg"},
+    {n:"R-MC Power Back",p:"Gas Turbine",mn:25,mx:500,u:"kg"},
+  ]
+};
+
+function status(v,mn,mx){
+  if(v===""||v===null||isNaN(+v)) return "empty";
+  return +v<mn?"low":+v>mx?"high":"ok";
+}
+function badge(st){
+  const m={ok:"✔ OK",low:"⚠ LOW",high:"↑ HIGH",empty:"—"};
+  return `<span class="badge ${st}">${m[st]||"—"}</span>`;
+}
+
+// ── BUILD TABLES ──────────────────────────────────────
+function buildTables(){
+  ["tank","pct","pail"].forEach(sec=>{
+    const isL=sec==="tank", isPct=sec==="pct";
+    document.getElementById("tbody-"+sec).innerHTML = CHEM[sec].map((c,i)=>{
+      const step=isL?100:isPct?0.01:1;
+      const fmt=v=>isL?Number(v).toLocaleString():isPct?Number(v).toFixed(2):Number(v).toLocaleString();
+      return `<tr>
+        <td><strong style="font-weight:500">${c.n}</strong></td>
+        <td style="color:var(--text2);font-size:12px">${c.p}</td>
+        <td class="num">${fmt(c.mn)}</td>
+        <td class="num">${fmt(c.mx)}</td>
+        <td class="num">
+          <input class="inp-actual" type="number" step="${step}" min="0"
+            id="${sec}_${i}" placeholder="—"
+            oninput="refreshBadge('${sec}','${i}',${c.mn},${c.mx})"/>
+        </td>
+        <td id="st_${sec}_${i}">${badge("empty")}</td>
+      </tr>`;
+    }).join("");
+  });
+}
+function refreshBadge(sec,i,mn,mx){
+  const v=document.getElementById(`${sec}_${i}`).value;
+  document.getElementById(`st_${sec}_${i}`).innerHTML=badge(status(v,mn,mx));
+}
+
+// ── DEFAULT URL ───────────────────────────────────────
+// ฝัง URL ไว้ในโค้ด — ไม่ต้องตั้งค่าทุกอุปกรณ์
+const DEFAULT_SHEET_URL = '';   // ← วาง Web App URL ตรงนี้ถ้าต้องการ hardcode
+const ADMIN_SALT = 'chem_stock_salt_2025';
+let sheetUrl = DEFAULT_SHEET_URL;
+
+// โหลด URL จาก localStorage (ถ้า admin เคยตั้งค่า)
+try { sheetUrl = localStorage.getItem('chem_api_url_v2') || DEFAULT_SHEET_URL; } catch(e) {}
+
+function hashPin(pin) {
+  let h = 0;
+  for (let i = 0; i < pin.length; i++) { h = ((h << 5) - h) + pin.charCodeAt(i); h |= 0; }
+  return h.toString(36) + ADMIN_SALT.length;
+}
+
+function verifyAdminPin(action) {
+  const stored = localStorage.getItem('chem_admin_pin');
+  if (!stored) {
+    const p1 = prompt('🔐 ตั้งรหัส PIN ผู้สร้าง (4 หลัก):');
+    if (!p1 || p1.length < 4) { showGlobalMsg('❌ PIN ต้องมีอย่างน้อย 4 หลัก', 'err'); return false; }
+    const p2 = prompt('🔐 ยืนยัน PIN อีกครั้ง:');
+    if (p1 !== p2) { showGlobalMsg('❌ PIN ไม่ตรงกัน', 'err'); return false; }
+    localStorage.setItem('chem_admin_pin', hashPin(p1));
+    showGlobalMsg('✅ ตั้ง PIN สำเร็จ', 'ok');
+    return true;
+  }
+  const entered = prompt(`🔐 ใส่ PIN ผู้สร้างเพื่อ "${action}":`);
+  if (!entered) return false;
+  if (hashPin(entered) !== stored) { showGlobalMsg('❌ PIN ไม่ถูกต้อง', 'err'); return false; }
+  return true;
+}
+
+function toggleUrlEdit() {
+  if (!verifyAdminPin('แก้ไข URL')) return;
+  const row = document.getElementById('url-edit-row');
+  const inp = document.getElementById('inp-apiurl');
+  const lbl = document.getElementById('url-edit-btn-lbl');
+  const isOpen = row.style.display !== 'none';
+  if (isOpen) {
+    row.style.display = 'none'; inp.style.display = 'none';
+    lbl.textContent = 'แก้ไข URL (ผู้สร้าง)';
+  } else {
+    row.style.display = 'block'; inp.style.display = 'block';
+    inp.value = sheetUrl || '';
+    lbl.textContent = 'ซ่อน';
+    inp.focus();
+  }
+}
+
+function cancelUrlEdit() {
+  document.getElementById('url-edit-row').style.display = 'none';
+  document.getElementById('inp-apiurl').style.display = 'none';
+  document.getElementById('url-edit-btn-lbl').textContent = 'แก้ไข URL (ผู้สร้าง)';
+}
+
+function saveApiUrl() {
+  const u = (document.getElementById('inp-apiurl').value || '').trim();
+  if (!u) { showGlobalMsg('กรุณาใส่ URL', 'err'); return; }
+  if (!u.startsWith('https://script.google.com')) { showGlobalMsg('URL ไม่ถูกต้อง ต้องขึ้นต้นด้วย https://script.google.com', 'err'); return; }
+  sheetUrl = u;
+  try { localStorage.setItem('chem_api_url_v2', u); } catch(e) {}
+  updateSyncBanner();
+  cancelUrlEdit();
+  showGlobalMsg('✅ บันทึก URL สำเร็จแล้ว', 'ok');
+}
+
+function resetAdminPin() {
+  if (!verifyAdminPin('รีเซ็ต PIN')) return;
+  localStorage.removeItem('chem_admin_pin');
+  showGlobalMsg('🔓 รีเซ็ต PIN แล้ว — ครั้งต่อไปจะตั้ง PIN ใหม่', 'ok');
+}
+
+async function testConn() {
+  if (!sheetUrl) { showGlobalMsg('กรุณาบันทึก URL ก่อน', 'err'); return; }
+  const ok = document.getElementById('conn-ok');
+  const err = document.getElementById('conn-err');
+  ok.style.display = 'none'; err.style.display = 'none';
+  setSyncStatus('busy', 'กำลังทดสอบการเชื่อมต่อ...');
+  try {
+    const resp = await fetch(sheetUrl + '?action=test');
+    const text = await resp.text();
+    let res; try { res = JSON.parse(text); } catch(e) { res = { status: 'error', message: text.slice(0, 120) }; }
+    if (res.status === 'ok') {
+      ok.textContent = '✅ เชื่อมต่อสำเร็จ — ระบบพร้อมใช้งาน';
+      ok.style.display = 'block';
+      setSyncStatus('ok', 'เชื่อม Google Sheet แล้ว');
+    } else {
+      err.textContent = '❌ ' + (res.message || 'เชื่อมต่อไม่สำเร็จ');
+      err.style.display = 'block';
+      setSyncStatus('err', 'เชื่อมต่อไม่ได้');
+    }
+  } catch(e) {
+    err.textContent = '❌ เชื่อมต่อไม่ได้: ' + e.message;
+    err.style.display = 'block';
+    setSyncStatus('err', 'เชื่อมต่อไม่ได้');
+  }
+}
+
+function setSyncStatus(state, msg) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-txt');
+  if (dot) dot.className = 'sdot sdot-' + (state === 'ok' ? 'ok' : state === 'err' ? 'err' : state === 'busy' ? 'busy' : 'idle');
+  if (txt) txt.textContent = msg;
+}
+
+function updateSyncBanner() {
+  setSyncStatus(sheetUrl ? 'ok' : 'idle', sheetUrl ? 'เชื่อม Google Sheet แล้ว' : 'ยังไม่เชื่อม Sheet — ไปที่ ⚙️ ตั้งค่า');
+  const sc = document.getElementById('share-card-main');
+  if (sc) sc.style.display = sheetUrl ? '' : 'none';
+  const st = document.getElementById('share-url-txt');
+  if (st && sheetUrl) st.textContent = sheetUrl;
+  const disp = document.getElementById('url-status-display');
+  const dtxt = document.getElementById('url-display-text');
+  if (disp) disp.style.display = sheetUrl ? '' : 'none';
+  if (dtxt && sheetUrl) dtxt.textContent = sheetUrl;
+}
+
+function copySheetUrl() {
+  if (!sheetUrl) { showGlobalMsg('ยังไม่มี URL', 'err'); return; }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(sheetUrl).then(() => showGlobalMsg('✅ Copy URL แล้ว', 'ok'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = sheetUrl; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showGlobalMsg('✅ Copy URL แล้ว', 'ok');
+  }
+}
+
+function exportConfig() {
+  if (!verifyAdminPin('Export Config')) return;
+  const cfg = { version: 1, app: 'CHEM_STOCK', exported: new Date().toISOString(), sheetUrl: sheetUrl || '' };
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'chem_config_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  showGlobalMsg('✅ Export config สำเร็จ', 'ok');
+}
+
+function importConfig(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('import-file-name').textContent = file.name;
+  const ok = document.getElementById('import-ok');
+  const err = document.getElementById('import-err');
+  ok.style.display = 'none'; err.style.display = 'none';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const cfg = JSON.parse(e.target.result);
+      if (!cfg.sheetUrl) { err.textContent = '❌ ไฟล์ไม่มี sheetUrl'; err.style.display = 'block'; return; }
+      if (!verifyAdminPin('Import URL จากไฟล์')) return;
+      sheetUrl = cfg.sheetUrl;
+      try { localStorage.setItem('chem_api_url_v2', sheetUrl); } catch(ex) {}
+      updateSyncBanner();
+      ok.textContent = '✅ Import สำเร็จ — URL ถูกตั้งค่าแล้ว กด ทดสอบ เพื่อยืนยัน';
+      ok.style.display = 'block';
+      showGlobalMsg('✅ Import config สำเร็จ', 'ok');
+    } catch(ex) {
+      err.textContent = '❌ ไฟล์ไม่ถูกต้อง: ' + ex.message;
+      err.style.display = 'block';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── SUBMIT ────────────────────────────────────────────
+async function submitForm(){
+  if(!sheetUrl){showGlobalMsg("⚙️ กรุณาตั้งค่า Apps Script URL ก่อนในแท็บ 'ตั้งค่า'","info");return;}
+  const date=document.getElementById("f-date").value;
+  const shift=document.getElementById("f-shift").value;
+  const checker=document.getElementById("f-checker").value.trim();
+  const leader=document.getElementById("f-leader").value.trim();
+  if(!date){showGlobalMsg("กรุณาเลือกวันที่","err");return;}
+
+  const rows=[];
+  const SEC_LABELS={tank:"Tank (L)",pct:"Tank (%)",pail:"Pail (kg)"};
+  ["tank","pct","pail"].forEach(sec=>{
+    CHEM[sec].forEach((c,i)=>{
+      const v=document.getElementById(`${sec}_${i}`).value;
+      if(v!==""){
+        rows.push({date,shift,checker,leader,section:SEC_LABELS[sec],
+          name:c.n,place:c.p,min:c.mn,max:c.mx,actual:+v,unit:c.u,
+          status:status(v,c.mn,c.mx)});
+      }
+    });
+  });
+  if(!rows.length){showGlobalMsg("กรุณากรอกค่า Actual อย่างน้อย 1 รายการ","err");return;}
+
+  const btn=document.getElementById("btn-save");
+  btn.disabled=true; btn.textContent="⏳ กำลังบันทึก…";
+  setSyncStatus('busy','กำลังส่งข้อมูล...');
+
+  const payload = JSON.stringify({rows});
+  try{
+    let res = null;
+    try {
+      const resp = await fetch(sheetUrl, {
+        method:"POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: payload,
+        redirect:'follow'
+      });
+      const text = await resp.text();
+      try { res = JSON.parse(text); } catch(pe){ res = {status:'error', message:text.slice(0,120)}; }
+    } catch(corsErr) {
+      // iOS Safari no-cors fallback
+      await fetch(sheetUrl, {
+        method:"POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: payload,
+        mode:'no-cors', redirect:'follow'
+      });
+      res = {status:'ok', saved: rows.length};
+    }
+
+    if(res && res.status==="ok"){
+      setSyncStatus('ok',`✅ ส่งสำเร็จ ${res.saved||rows.length} รายการ`);
+      showGlobalMsg(`✅ บันทึกสำเร็จ ${res.saved||rows.length} รายการ (${date} กะ ${shift})`,"ok");
+      ["tank","pct","pail"].forEach(sec=>{
+        CHEM[sec].forEach((_,i)=>{
+          document.getElementById(`${sec}_${i}`).value="";
+          document.getElementById(`st_${sec}_${i}`).innerHTML=badge("empty");
+        });
+      });
+    } else {
+      setSyncStatus('err','❌ ส่งไม่สำเร็จ');
+      showGlobalMsg("❌ เกิดข้อผิดพลาด: "+(res?res.message:'ส่งไม่สำเร็จ'),"err");
+    }
+  }catch(e){
+    setSyncStatus('err','❌ เชื่อมต่อไม่ได้');
+    showGlobalMsg("❌ ไม่สามารถเชื่อมต่อ Apps Script ได้ กรุณาตรวจสอบ URL","err");
+  }
+  btn.disabled=false; btn.innerHTML="💾 บันทึกข้อมูลลง Google Sheets";
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+async function loadDashboard(){
+  document.getElementById("dash-area").innerHTML=`<div class="loader"><span class="spin">⏳</span> กำลังโหลดข้อมูลจาก Google Sheets…</div>`;
+  if(!sheetUrl){
+    document.getElementById("dash-area").innerHTML=`<div class="alert alert-info">⚙️ กรุณาตั้งค่า Apps Script URL ก่อนในแท็บ 'ตั้งค่า'</div>`;
+    return;
+  }
+  try{
+    const res=await fetch(`${sheetUrl}?action=summary`);
+    const d=await res.json();
+    if(d.status!=="ok") throw new Error(d.message);
+    renderDash(d);
+  }catch(e){
+    document.getElementById("dash-area").innerHTML=
+      `<div class="alert alert-err">❌ โหลดข้อมูลไม่ได้: ${e.message}</div>`;
+  }
+}
+
+function renderDash(d){
+  const lows=d.lowItems||[];
+  const recent=(d.recent||[]).slice(0,60);
+
+  let h=`<div class="stat-row">
+    <div class="stat"><div class="stat-n">${(d.total||0).toLocaleString()}</div><div class="stat-l">รายการทั้งหมด</div></div>
+    <div class="stat"><div class="stat-n">${d.days||0}</div><div class="stat-l">วันที่บันทึก</div></div>
+    <div class="stat"><div class="stat-n danger">${d.lowCount||0}</div><div class="stat-l">ต่ำกว่า Min</div></div>
+    <div class="stat"><div class="stat-n warn">${d.highCount||0}</div><div class="stat-l">สูงกว่า Max</div></div>
+  </div>`;
+
+  h+=`<div class="card"><div class="card-head">⚠️ สารเคมีที่ต้องสั่งซื้อ (LOW)</div><div class="card-body">`;
+  if(!lows.length){
+    h+=`<div class="alert alert-ok">✔ ทุกรายการอยู่ในเกณฑ์ปกติ</div>`;
+  } else {
+    h+=lows.map(r=>`<div class="rec-item">
+      <div><div class="rec-name">${r.name}</div><div class="rec-place">${r.place} · ${r.cnt} ครั้ง</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--text2)">ล่าสุด: ${r.lastActual} ${r.unit}</span>
+        <span class="badge low">สั่งซื้อ</span>
+      </div>
+    </div>`).join("");
+  }
+  h+=`</div></div>`;
+
+  h+=`<div class="card"><div class="card-head">📋 ประวัติการบันทึกล่าสุด (60 รายการ)</div>
+  <div class="card-body" style="padding:0"><div class="tbl-wrap">
+  <table><thead><tr>
+    <th>วันที่</th><th>กะ</th><th>ผู้ตรวจ</th><th>Chemical</th>
+    <th>Place</th><th class="num">Actual</th><th>Unit</th><th>Status</th>
+  </tr></thead><tbody>`;
+
+  if(!recent.length){
+    h+=`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text2)">ยังไม่มีข้อมูล</td></tr>`;
+  } else {
+    h+=recent.map(r=>`<tr>
+      <td style="white-space:nowrap">${r.Date||""}</td>
+      <td style="text-align:center">${r.Shift||"—"}</td>
+      <td>${r.Checker||"—"}</td>
+      <td style="font-weight:500">${r["Chemical Name"]||""}</td>
+      <td style="color:var(--text2);font-size:12px">${r["Place to Use"]||""}</td>
+      <td class="num">${Number(r.Actual||0).toLocaleString()}</td>
+      <td style="color:var(--text2)">${r.Unit||""}</td>
+      <td>${badge((r.Status||"").toLowerCase()||"empty")}</td>
+    </tr>`).join("");
+  }
+  h+=`</tbody></table></div></div></div>`;
+
+  document.getElementById("dash-area").innerHTML=h;
+}
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(id,el){
+  ["form","dash","setup"].forEach(t=>document.getElementById("tab-"+t).style.display="none");
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+id).style.display="block";
+  el.classList.add("active");
+  if(id==="dash") loadDashboard();
+}
+
+function showGlobalMsg(txt,type){
+  const el=document.getElementById("global-msg");
+  const cls={ok:"alert-ok",err:"alert-err",info:"alert-info"};
+  el.innerHTML=`<div class="alert ${cls[type]||"alert-info"}">${txt}</div>`;
+  setTimeout(()=>{el.innerHTML=""},6000);
+}
+
+// ── INIT ──────────────────────────────────────────────
+document.getElementById("f-date").value=new Date().toISOString().split("T")[0];
+buildTables();
+updateSyncBanner();
+</script>
+</body>
+</html>
